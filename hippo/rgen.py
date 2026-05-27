@@ -487,7 +487,7 @@ class RandomSelectionGenerator(RRGMixin):
             path = None
         else:
             # Recipe I/O set up
-            path = Path(str(self.db_path.name).replace(".sqlite", "_selections"))
+            path = Path(f"{out_key}_selections")
             if not path.exists():
                 mrich.writing(f"{path}/")
                 path.mkdir(exist_ok=True)
