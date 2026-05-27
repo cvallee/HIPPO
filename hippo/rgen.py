@@ -448,6 +448,7 @@ class RandomSelectionGenerator(RRGMixin):
         start_with: Recipe | CompoundSet | IngredientSet = None,
         compounds: CompoundSet | None = None,
         quoted_only: bool = True,
+        out_key: str | None = None,
         skip_directory_creation: bool = False,
     ):
         """RandomSelectionGenerator initialisation"""
@@ -469,8 +470,16 @@ class RandomSelectionGenerator(RRGMixin):
         self.get_starting_recipe(start_with)
         mrich.var("starting recipe", self.starting_recipe)
 
+        if not out_key:
+            out_key = str(self.db_path.name).removesuffix(".sqlite")
+        mrich.var("out_key", out_key)
+
+        parent_dir = Path(out_key).parent
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True)
+
         # JSON I/O set up
-        self._data_path = Path(str(self.db_path.name).replace(".sqlite", "_sgen.json"))
+        self._data_path = Path(f"{out_key}_sgen.json")
         if self.data_path.exists():
             mrich.warning(f"Will overwrite existing rgen data file: {self.data_path}")
 
@@ -876,7 +885,8 @@ class RandomRecipeSelectionGenerator(RRGMixin):
             db,
             suppliers=suppliers,
             route_pool=route_pool,
-            skip_directory_creation=True
+            skip_directory_creation=True,
+            out_key=out_key,
         )
 
         self._sgen = RandomSelectionGenerator(
@@ -884,7 +894,8 @@ class RandomRecipeSelectionGenerator(RRGMixin):
             suppliers=suppliers,
             compounds=compounds,
             amount=amount,
-            skip_directory_creation=True
+            skip_directory_creation=True,
+            out_key=out_key,
         )
 
         self._compound_and_route_pool = [ingredient for ingredient in self._sgen.compound_pool]
